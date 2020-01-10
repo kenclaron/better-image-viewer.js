@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Better Image Viewer JS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=0.45, user-scalable=no">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/better-image-viewer.css">
+</head>
+<body>
+  <h1>Better Image Viewer JS</h1>
+  <p>Click this image</p>
+  <img id="image" src="https://images.pexels.com/photos/3290071/pexels-photo-3290071.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260" width=360 height=540>
+  <div id="instruction">
+    <p>Move: Click or touch and move</p>
+    <p>Zoom: Double click or double tap</p>
+    <p>Zoom: Scroll or pinch/spread</p>
+    <p>Close: Move down/up or swipe down/up</p>
+    <p>Close: Click button in top right corner</p>
+  </div>
+  <script src="./js/better-image-viewer.js"></script>
+  <script>
+    var BetterImageViewer = new ImageViewer();
+    BetterImageViewer.AddEvents();
+  </script>
+</body>
+</html>

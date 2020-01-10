@@ -1,0 +1,51 @@
+body {
+  margin: 0 auto;
+  background-color: #f2f2f2;
+}
+
+h1 {
+  color: #000;
+  font-family: monospace;
+  font-size: 2.75em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+p {
+  color: #000;
+  font-family: monospace;
+  font-size: 1em;
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+#instruction {
+  position: relative;
+  width: 360px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#instruction p {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-size: 1.25em;
+  text-align: left;
+}
+
+#image {
+  position: relative;
+  left: 50%;
+  max-width: 100%;
+  height: 100%;
+  transform: translateX(-50%);
+  cursor: pointer;
+  border: 5px solid black;
+}
+
+@media (max-device-width: 512px) {
+  #instruction p {
+    font-size: 1.75em;
+  }
+}
