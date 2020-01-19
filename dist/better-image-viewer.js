@@ -12,40 +12,20 @@ console.info("[better-image-viewer.js] Version - 1.0");
 class ImageViewer {
   /**
    * Initialize and create a viewer object in a document
-   * @param settings Custom settings for image viewer. See in README.md
    */
-  constructor(settings = undefined) { 
+  constructor() { 
     this.settings = {
       transition: {
-        start: "0.2s ease-in-out",
+        start: "0.2s ease-in-out", 
         end: "0.0s ease-in-out"
       },
-      zoom: {
+      scale: {
         max: 6,
         min: 1
       }
     };
-    if(settings) {
-      if(settings.transition) {
-        if(settings.transition.start) {
-          this.settings.transition.start = settings.transition.start;
-        }
-        if(settings.transition.end) {
-          this.settings.transition.end = settings.transition.end;
-        }
-      }
-      if(settings.zoom) {
-        if(settings.zoom.max) {
-          this.settings.zoom.max = settings.zoom.max;
-        }
-        if(settings.zoom.min) {
-          this.settings.zoom.min = settings.zoom.min;
-        }
-      }
-    }
-    this.currentZoom = 1;
+    this.currentScale = 1;
     this.isPressed = false;
-    this.isTouched = false;
     this.isOpened = false;
     this.source = undefined;
     this.handlers = {
@@ -55,7 +35,8 @@ class ImageViewer {
       mouseup: undefined,
       touchstart: undefined,
       touchmove: undefined,
-      touchend: undefined
+      touchend: undefined,
+      resize: undefined
     }
   }
 
@@ -66,19 +47,18 @@ class ImageViewer {
    */
   AddEvents(element = null)
   {
-    let that = this;
     // For all <img> element in document
     if(element == null) {
       Array.prototype.forEach.call(document.getElementsByTagName("img"), function (b) {
         b.addEventListener('click', function() {
-          that.OpenViewer(this);
+          IM.OpenViewer(this);
         });
       });
     }
     // Only for element
     else {
       element.addEventListener('click', function() {
-        that.OpenViewer(this);
+        IM.OpenViewer(this);
       });
     }
 
@@ -130,13 +110,31 @@ class ImageViewer {
     let source_rect = source.getBoundingClientRect();
     image.style.maxWidth = source.clientWidth + "px";
     image.style.maxHeight = source.clientHeight + "px";
+
+    if(image.width == image.height) {
+      image.style.minWidth = source.clientWidth + "px";
+      image.style.minHeight = source.clientHeight + "px";
+    }
+
     image.style.left = (source_rect.left + source.clientWidth / 2) + "px";
     image.style.top = (source_rect.top + source.clientHeight / 2) + "px";
     image.style.transform = "translate(-50%, -50%) scale(1.0)";
+
     AnimateStyle(image);
+
     setTimeout(() => {
       image.style.maxWidth = 100 + "%";
       image.style.maxHeight = 100 + "%";
+
+      if(image.width == image.height) {
+        if(window.innerWidth <= window.innerHeight) {
+          image.style.minWidth = 100 + "vw";
+        }
+        else {
+          image.style.minHeight = 100 + "vh";
+        }
+      }
+
       image.style.left = 50 + "%";
       image.style.top = 50 + "%";
     }, 10);
@@ -178,8 +176,6 @@ class ImageViewer {
     });
 
     window.addEventListener("mousedown", that.handlers.mousedown = function(e) {
-      if(that.isTouched) return;
-
       that.isPressed = true;
 
       if(fast_press) {
@@ -232,8 +228,6 @@ class ImageViewer {
     let dist_move_back = {x: 0, y: 0};
     window.addEventListener("touchstart", that.handlers.touchstart = function(e) {
       that.isPressed = true;
-
-      that.isTouched = true;
 
       if(fast_press) {
         fast_press = false;
@@ -321,12 +315,12 @@ class ImageViewer {
           // Get end result, greatest movement along the x axis or y axis
           let result = Math.abs(result_x) > Math.abs(result_y) ? result_x : result_y;
 
-          that.currentZoom = that.currentZoom + result;
-          if(that.currentZoom < 0.5) {
-            that.currentZoom = 0.5;
+          that.currentScale = that.currentScale + result;
+          if(that.currentScale < 0.5) {
+            that.currentScale = 0.5;
           }
 
-          image.style.transform = "translate(calc(-50% - " + diff.x + "px), calc(-50% - " + diff.y + "px)) scale(" + that.currentZoom + ")";
+          image.style.transform = "translate(calc(-50% - " + diff.x + "px), calc(-50% - " + diff.y + "px)) scale(" + that.currentScale + ")";
 
           // Backup variable
           dist_move_back = dist_move;
@@ -346,10 +340,6 @@ class ImageViewer {
     window.addEventListener("touchend", that.handlers.touchend = function(e) {
       that.isPressed = false;
 
-      setTimeout(() => {
-        that.isTouched = false;
-      }, 350);
-
       first_offset = {
         x: undefined,
         y: undefined
@@ -359,11 +349,11 @@ class ImageViewer {
         y: 0
       };
 
-      if(that.currentZoom < that.settings.zoom.min) {
-        that.currentZoom = that.settings.zoom.min;
+      if(that.currentScale < that.settings.scale.min) {
+        that.currentScale = that.settings.scale.min;
       }
-      else if(that.currentZoom > that.settings.zoom.max) {
-        that.currentZoom = that.settings.zoom.max;
+      else if(that.currentScale > that.settings.scale.max) {
+        that.currentScale = that.settings.scale.max;
       }
 
       AnimateStyle(image);
@@ -372,6 +362,30 @@ class ImageViewer {
 
       end_diff = diff;
     });
+
+    /**
+     * ------------------------------------------------------------------------
+     * Resize Event
+     * ------------------------------------------------------------------------
+     */
+
+    window.addEventListener("resize", that.handlers.resize = function(e) {
+      ScrollZoomImage(that, image, that.settings.scale.max * 150);
+
+      image.style.minHeight = "";
+      image.style.minWidth = "";
+
+      if(image.width == image.height) {
+        if(window.innerWidth <= window.innerHeight) {
+          image.style.minWidth = image.style.minHeight = 100 + "vw";
+        }
+        else {
+          image.style.minWidth = image.style.minHeight = 100 + "vh";
+        }
+      }
+
+    });
+
 
     /**
      * ------------------------------------------------------------------------
@@ -409,11 +423,11 @@ class ImageViewer {
         y: end_diff.y + position.start.y - position.current.y,
       }
 
-      if(that.currentZoom <= that.settings.zoom.min) {
-        image.style.transform = "translate(calc(-50%), calc(-50% - " + diff.y + "px)) scale(" + that.currentZoom + ")";
+      if(that.currentScale <= that.settings.scale.min) {
+        image.style.transform = "translate(calc(-50%), calc(-50% - " + diff.y + "px)) scale(" + that.currentScale + ")";
       }
       else {
-        image.style.transform = "translate(calc(-50% - " + diff.x + "px), calc(-50% - " + diff.y + "px)) scale(" + that.currentZoom + ")";
+        image.style.transform = "translate(calc(-50% - " + diff.x + "px), calc(-50% - " + diff.y + "px)) scale(" + that.currentScale + ")";
       }
 
       return true;
@@ -427,12 +441,12 @@ class ImageViewer {
      */
     function EndMoveImage(that, image)
     {
-      if(that.currentZoom <= that.settings.zoom.min) {
+      if(that.currentScale <= that.settings.scale.min) {
         if(diff.y > image.height / 2 || diff.y < -image.height / 2) {
           that.CloseViewer();
         }
         else {
-          image.style.transform = "translate(calc(-50%), calc(-50%)) scale(" + that.currentZoom + ")";
+          image.style.transform = "translate(calc(-50%), calc(-50%)) scale(" + that.currentScale + ")";
           diff.x = 0;
           diff.y = 0;
         }
@@ -457,11 +471,11 @@ class ImageViewer {
         if((rect.top > 0 && rect.bottom < window.innerHeight) || rect.height < window.innerHeight) {
           diff.y = 0;
         }
-        if(rect.left > 0 && rect.right < window.innerWidth) {
+        if((rect.left > 0 && rect.right < window.innerWidth) || rect.width < window.innerWidth) {
           diff.x = 0;
         }
 
-        image.style.transform = "translate(calc(-50% - " + diff.x + "px), calc(-50% - " + diff.y + "px)) scale(" + that.currentZoom + ")";
+        image.style.transform = "translate(calc(-50% - " + diff.x + "px), calc(-50% - " + diff.y + "px)) scale(" + that.currentScale + ")";
       }
 
       return true;
@@ -479,42 +493,38 @@ class ImageViewer {
      */
     function ScrollZoomImage(that, image, delta, force = false)
     {
-      if(force && that.currentZoom < window.innerHeight / image.clientHeight) {
-        that.currentZoom = window.innerHeight / image.clientHeight;
+      if(force && that.currentScale < window.innerHeight / image.clientHeight) {
+        that.currentScale = window.innerHeight / image.clientHeight;
       }
-      else if(force && that.currentZoom < window.innerWidth / image.clientWidth) {
-        that.currentZoom = window.innerWidth / image.clientWidth;
+      else if(force && that.currentScale < that.settings.scale.max) {
+        that.currentScale = that.settings.scale.max;
       }
-      else if(force && that.currentZoom < that.settings.zoom.max) {
-        that.currentZoom = that.settings.zoom.max;
-      }
-      else if(force && that.currentZoom >= that.settings.zoom.max) {
-        that.currentZoom = that.settings.zoom.min;
+      else if(force && that.currentScale == that.settings.scale.max) {
+        that.currentScale = that.settings.scale.min;
       }
       else {
-        that.currentZoom = (that.currentZoom - delta / 1000).toFixed(2);
+        that.currentScale = (that.currentScale - delta / 1000).toFixed(2);
       }
 
-
-      if(that.currentZoom < that.settings.zoom.min) {
-        that.currentZoom = that.settings.zoom.min;
+      if(that.currentScale < that.settings.scale.min) {
+        that.currentScale = that.settings.scale.min;
       }
-      else if(that.currentZoom > that.settings.zoom.max) {
-        that.currentZoom = that.settings.zoom.max;
+      else if(that.currentScale > that.settings.scale.max) {
+        that.currentScale = that.settings.scale.max;
       }
       
-      image.style.transform = image.style.transform.split("scale")[0] + " scale(" + that.currentZoom + ") " + image.style.transform.split("scale")[1].split(")")[1];
+      image.style.transform = image.style.transform.split("scale")[0] + " scale(" + that.currentScale + ") " + image.style.transform.split("scale")[1].split(")")[1];
 
       if(delta > 0) {
-        if(that.currentZoom >= 3) {
+        if(that.currentScale >= 3) {
           diff.x = diff.x / 1.1;
           diff.y = diff.y / 1.1;
         }
-        else if(that.currentZoom < 3 && that.currentZoom >= 2) {
+        else if(that.currentScale < 3 && that.currentScale >= 2) {
           diff.x = diff.x / 1.15;
           diff.y = diff.y / 1.15;
         }
-        else if(that.currentZoom == 1) {
+        else if(that.currentScale == 1) {
           diff.x = 0;
           diff.y = 0;
         }
@@ -523,7 +533,7 @@ class ImageViewer {
           diff.y = diff.y / 1.5;
         }
 
-        image.style.transform = "translate(calc(-50% - " + diff.x + "px), calc(-50% - " + diff.y + "px)) scale(" + that.currentZoom + ")";
+        image.style.transform = "translate(calc(-50% - " + diff.x + "px), calc(-50% - " + diff.y + "px)) scale(" + that.currentScale + ")";
       }
 
       return true;
@@ -543,6 +553,7 @@ class ImageViewer {
     window.removeEventListener("touchstart", this.handlers.touchstart);
     window.removeEventListener("touchmove", this.handlers.touchmove);
     window.removeEventListener("touchend", this.handlers.touchend);
+    window.removeEventListener("resize", this.handlers.resize);
 
     let container = document.getElementById("image-viewer-container");
     let image = document.getElementById("image-viewer-container").getElementsByTagName("img")[0];
@@ -555,13 +566,24 @@ class ImageViewer {
     let source_rect = this.source.getBoundingClientRect();
     image.style.transition = this.settings.transition.start;
     image.style.transform = "translate(-50%, -50%) scale(1.0)";
+
     setTimeout(() => {
       image.style.maxWidth = source_rect.width + "px";
       image.style.maxHeight = source_rect.height + "px";
+
+      if(image.width == image.height) {
+        if(window.innerWidth <= window.innerHeight) {
+          image.style.minWidth = source_rect.width + "px";
+        }
+        else {
+          image.style.minHeight = source_rect.height + "px";
+        }
+      }
+
       image.style.left = (source_rect.left + source_rect.width / 2) + "px";
       image.style.top = (source_rect.top + source_rect.height / 2) + "px";
       
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
     }, 10);
 
     close.style.transition = this.settings.transition.start;
@@ -571,9 +593,8 @@ class ImageViewer {
       container.remove();
     }, 200);
     
-    this.currentZoom = 1;
+    this.currentScale = 1;
     this.isPressed = false;
-    this.isTouched = false;
     this.isOpened = false;
     this.source = undefined;
     this.handlers = {
@@ -583,7 +604,8 @@ class ImageViewer {
       mouseup: undefined,
       touchstart: undefined,
       touchmove: undefined,
-      touchend: undefined
+      touchend: undefined,
+      resize: undefined
     }
 
     return true;

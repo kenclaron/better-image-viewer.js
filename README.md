@@ -9,6 +9,7 @@
 - [Getting started](#getting-started)
   - [Syntax](#syntax)
   - [Settings](#settings)
+  - [Add Events](#add-events)
   - [Example](#example)
 - [License](#license)
 - [Browser support](#browser-support)
@@ -17,6 +18,7 @@
 ## Features
 
 - Cross-browser support
+- Desktop and mobile platforms support
 - Supports custom settings (check out the available [settings](#settings))
 - Supports touch, multi-touch
 - Supports move
@@ -87,16 +89,23 @@ In browser:
     - Type: `Number`
   - The settings for maximum and minimum zoom of image
 
-#### Example
+#### Add Events
 
 ```js
-  var BetterImageViewer = new ImageViewer();
-  BetterImageViewer.AddEvents([element]);
+  new ImageViewer.AddEvents([element]);
 ```
 
 - **element** (optional)
   - Type: `HTMLElement`
-  - The target image for viewing.
+  - The target image for viewing 
+  - `undefined`/`null` -> all img HTML elements.
+
+#### Example
+
+```js
+  var BetterImageViewer = new ImageViewer();
+  BetterImageViewer.AddEvents();
+```
 
 ## License
 
@@ -114,11 +123,11 @@ The Better-Image-Viewer.js licensed under the [MIT license](https://opensource.o
 
 > You can express your gratitude by clicking on one of the links
 
-- [Personal Website](http://kenclaron.ru)
+- [Personal website](http://kenclaron.ru)
 - [Telegram](http://t.me/joinchat/AAAAAFZA0MAQ_0nopQKN_A)
 - [VK](https://vk.com/club190729942)
 
 
 ___________________________________
 
-[⬆ back to top](#table-of-contents)
+[↑ back to top](#table-of-contents)
