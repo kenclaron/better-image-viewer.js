@@ -124,8 +124,7 @@ The Better-Image-Viewer.js licensed under the [MIT license](https://opensource.o
 > You can express your gratitude by clicking on one of the links
 
 - [Personal website](http://kenclaron.ru)
-- [Telegram](http://t.me/joinchat/AAAAAFZA0MAQ_0nopQKN_A)
-- [VK](https://vk.com/club190729942)
+- [VK](https://vk.com/club190729942) / [Telegram](http://t.me/joinchat/AAAAAFZA0MAQ_0nopQKN_A)
 
 
 ___________________________________

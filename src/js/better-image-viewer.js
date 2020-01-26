@@ -25,8 +25,10 @@ class ImageViewer {
       }
     };
     this.currentScale = 1;
+    this.dateFirstClicked = 0;
     this.isPressed = false;
     this.isOpened = false;
+    this.isFirstClicked = false;
     this.source = undefined;
     this.handlers = {
       wheel: undefined,
@@ -83,7 +85,7 @@ class ImageViewer {
     // Create clone of ImageViewer
     let that = this;
 
-    // New settings
+    // Update settings
     this.isOpened = true;
     this.source = source;
 
@@ -161,7 +163,6 @@ class ImageViewer {
     }
     let end_diff = {x: 0, y: 0};
     let diff = {x: 0, y: 0};
-    let fast_press = false;
 
     /**
      * ------------------------------------------------------------------------
@@ -178,16 +179,14 @@ class ImageViewer {
     window.addEventListener("mousedown", that.handlers.mousedown = function(e) {
       that.isPressed = true;
 
-      if(fast_press) {
-        fast_press = false;
-
+      // Double click / tap
+      if(that.isFirstClicked && Date.now() < that.dateFirstTouch + 300) {
+        that.isFirstClicked = false;
         ScrollZoomImage(that, image, -Math.sqrt(image.width * image.height * 5), true);
       }
       else {
-        fast_press = true;
-        setTimeout(() => {
-          fast_press = false;
-        }, 300);
+        that.isFirstClicked = true;
+        that.dateFirstTouch = Date.now();
       }
       
       position.start.x = e.clientX;
@@ -196,7 +195,7 @@ class ImageViewer {
 
     window.addEventListener("mousemove", that.handlers.mousemove = function(e) {
       if(that.isPressed) {
-        fast_press = false;
+        that.isFirstClicked = false;
 
         position.current.x = e.clientX;
         position.current.y = e.clientY;
@@ -207,7 +206,7 @@ class ImageViewer {
 
     window.addEventListener("mouseup", that.handlers.mouseup = function(e) {
       that.isPressed = false;
-
+      
       AnimateStyle(image);
 
       EndMoveImage(that, image);
@@ -225,21 +224,10 @@ class ImageViewer {
       x: undefined,
       y: undefined
     };
-    let dist_move_back = {x: 0, y: 0};
+    let distanceMoveBack = {x: 0, y: 0};
+
     window.addEventListener("touchstart", that.handlers.touchstart = function(e) {
       that.isPressed = true;
-
-      if(fast_press) {
-        fast_press = false;
-
-        ScrollZoomImage(that, image, -Math.sqrt(image.width * image.height * 5), true);
-      }
-      else {
-        fast_press = true;
-        setTimeout(() => {
-          fast_press = false;
-        }, 300);
-      }
 
       let touch = e.changedTouches[0];
 
@@ -249,21 +237,10 @@ class ImageViewer {
 
     window.addEventListener("touchmove", that.handlers.touchmove = function(e) {
       if(that.isPressed) {
-        fast_press = false;
-
-        // Zoom image
-        /* Add '|| true' for emulate on non-touch device [Debug] */
         if(e.touches.length >= 2) {
           let first = e.changedTouches[0];
           let second = e.changedTouches[1];
-          /*
-            Emulated code for non-touch device [Debug]
-          */
-          //let second = {
-          //  clientX: window.innerWidth / 2,
-          //  clientY: window.innerHeight / 2
-          //};
-
+        
           let offset = {x: undefined, y: undefined};
 
           if(first.clientX < second.clientX) {
@@ -302,33 +279,36 @@ class ImageViewer {
           };
 
           // Difference first and final move
-          let dist_move = {
+          let distanceMove = {
             x: offset.x - first_offset.x,
             y: offset.y - first_offset.y
           };
 
           // Get result X-axis
-          let result_x = (dist_move.x - dist_move_back.x) / 100;
+          let result_x = (distanceMove.x - distanceMoveBack.x) / 100;
           // Get result Y-axis
-          let result_y = (dist_move.y - dist_move_back.y) / 100;
+          let result_y = (distanceMove.y - distanceMoveBack.y) / 100;
 
           // Get end result, greatest movement along the x axis or y axis
           let result = Math.abs(result_x) > Math.abs(result_y) ? result_x : result_y;
 
-          that.currentScale = that.currentScale + result;
+          that.currentScale = isNaN(that.currentScale + result) ? that.currentScale : Number(that.currentScale + result);
           if(that.currentScale < 0.5) {
             that.currentScale = 0.5;
+          }
+          if(isNaN(that.currentScale)) {
+            that.currentScale = "ERROR #001";
           }
 
           image.style.transform = "translate(calc(-50% - " + diff.x + "px), calc(-50% - " + diff.y + "px)) scale(" + that.currentScale + ")";
 
           // Backup variable
-          dist_move_back = dist_move;
+          distanceMoveBack = distanceMove;
         }
         // Move image
         else {
           let touch = e.changedTouches[0];
-  
+
           position.current.x = touch.clientX;
           position.current.y = touch.clientY;
           
@@ -344,7 +324,7 @@ class ImageViewer {
         x: undefined,
         y: undefined
       };
-      dist_move_back = {
+      distanceMoveBack = {
         x: 0,
         y: 0
       };
@@ -594,8 +574,10 @@ class ImageViewer {
     }, 200);
     
     this.currentScale = 1;
+    this.dateFirstClicked = 0;
     this.isPressed = false;
     this.isOpened = false;
+    this.isFirstClicked = false;
     this.source = undefined;
     this.handlers = {
       wheel: undefined,
