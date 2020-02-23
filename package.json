@@ -1,5 +1,5 @@
 {
-  "name": "better-image-viewer",
+  "name": "better-image-viewer.js",
   "version": "1.0.0",
   "description": "Smooth JavaScript image viewer for website.",
   "main": "dist/better-image-viewer.js",
