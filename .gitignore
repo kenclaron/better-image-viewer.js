@@ -1,0 +1,15 @@
+*.7z
+*.rar
+*.tar
+*.zip
+
+*.log
+
+Thumbs.db
+Desktop.ini
+.DS_Store*
+ehthumbs.db
+Icon?
+
+node_modules
+npm-debug.log
