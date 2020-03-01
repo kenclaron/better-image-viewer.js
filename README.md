@@ -1,4 +1,5 @@
 # Better-Image-Viewer.js
+![npm](https://img.shields.io/npm/dt/better-image-viewer.js)
 
 > Smooth vanilla JavaScript image viewer for website.
 
