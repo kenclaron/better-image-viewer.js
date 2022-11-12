@@ -3,8 +3,6 @@
 
 > Smooth vanilla JavaScript image viewer for websites.
 
-[Website for preview](http://kenclaron.ru)
-
 ## Table of contents
 - [Features](#features)
 - [Getting started](#getting-started)
